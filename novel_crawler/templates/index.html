@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小说爬虫工具</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5',
+                        secondary: '#10B981',
+                        accent: '#F59E0B',
+                        dark: '#1F2937',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .bg-gradient {
+                background: linear-gradient(135deg, #4F46E5 0%, #10B981 100%);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Header -->
+    <header class="bg-gradient text-white py-12">
+        <div class="container mx-auto px-4">
+            <h1 class="text-4xl md:text-5xl font-bold text-center text-shadow mb-4">小说爬虫工具</h1>
+            <p class="text-lg md:text-xl text-center max-w-2xl mx-auto opacity-90">
+                轻松爬取起点中文网和番茄小说的小说内容，支持多种输出格式
+            </p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-12">
+        <!-- Form Section -->
+        <section class="bg-white rounded-xl shadow-lg p-6 md:p-8 mb-12">
+            <h2 class="text-2xl font-bold text-dark mb-6">爬虫设置</h2>
+            
+            <form id="crawlForm" class="space-y-6">
+                <!-- Novel URL -->
+                <div>
+                    <label for="url" class="block text-sm font-medium text-gray-700 mb-2">小说目录页URL</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                            <i class="fa fa-link text-gray-400"></i>
+                        </span>
+                        <input type="url" id="url" name="url" 
+                            class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                            placeholder="例如: https://www.qidian.com/book/1234567/ 或 https://fanqie.com/book/1234567/"
+                            required>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">支持网站: 起点中文网 (qidian.com) 和 番茄小说 (fanqie.com)</p>
+                </div>
+
+                <!-- Output Format -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">输出格式</label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="flex items-center">
+                            <input type="radio" id="format-docx" name="format" value="docx" class="h-4 w-4 text-primary focus:ring-primary border-gray-300" checked>
+                            <label for="format-docx" class="ml-2 block text-sm text-gray-700">DOCX</label>
+                        </div>
+                        <div class="flex items-center">
+                            <input type="radio" id="format-txt" name="format" value="txt" class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
+                            <label for="format-txt" class="ml-2 block text-sm text-gray-700">TXT</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chapter Range -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="start" class="block text-sm font-medium text-gray-700 mb-2">开始章节</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                                <i class="fa fa-list-ol text-gray-400"></i>
+                            </span>
+                            <input type="number" id="start" name="start" min="1" value="1"
+                                class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+                        </div>
+                    </div>
+                    <div>
+                        <label for="end" class="block text-sm font-medium text-gray-700 mb-2">结束章节 (可选)</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                                <i class="fa fa-list-ol text-gray-400"></i>
+                            </span>
+                            <input type="number" id="end" name="end" min="1"
+                                class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                                placeholder="留空则爬取全部">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="pt-4">
+                    <button type="submit" id="submitBtn" 
+                        class="w-full bg-primary hover:bg-primary/90 text-white font-medium py-3 px-6 rounded-lg transition-all flex items-center justify-center">
+                        <i class="fa fa-spider mr-2"></i>
+                        开始爬取
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Progress Section -->
+        <section id="progressSection" class="bg-white rounded-xl shadow-lg p-6 md:p-8 mb-12 hidden">
+            <h2 class="text-2xl font-bold text-dark mb-6">爬取进度</h2>
+            
+            <div class="space-y-6">
+                <!-- Progress Bar -->
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-sm font-medium text-gray-700">爬取进度</span>
+                        <span id="progressPercentage" class="text-sm font-medium text-primary">0%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-4">
+                        <div id="progressBar" class="bg-primary h-4 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Status Information -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="text-sm font-medium text-gray-500 mb-2">当前状态</h3>
+                        <p id="statusText" class="text-lg font-medium text-dark">准备中...</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="text-sm font-medium text-gray-500 mb-2">章节进度</h3>
+                        <p id="chapterProgress" class="text-lg font-medium text-dark">0 / 0</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="text-sm font-medium text-gray-500 mb-2">预计剩余时间</h3>
+                        <p id="estimatedTime" class="text-lg font-medium text-dark">--</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="text-sm font-medium text-gray-500 mb-2">任务ID</h3>
+                        <p id="taskId" class="text-lg font-medium text-dark break-all">--</p>
+                    </div>
+                </div>
+
+                <!-- Error Message -->
+                <div id="errorMessage" class="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg hidden">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fa fa-exclamation-circle text-red-500"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p id="errorText" class="text-sm text-red-700"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Download Button -->
+                <div id="downloadSection" class="pt-4 hidden">
+                    <a id="downloadBtn" href="#" 
+                        class="w-full bg-secondary hover:bg-secondary/90 text-white font-medium py-3 px-6 rounded-lg transition-all flex items-center justify-center">
+                        <i class="fa fa-download mr-2"></i>
+                        下载小说
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+                <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fa fa-link text-2xl text-primary"></i>
+                </div>
+                <h3 class="text-xl font-bold text-dark mb-2">支持多网站</h3>
+                <p class="text-gray-600">支持起点中文网和番茄小说，轻松爬取热门小说</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+                <div class="w-16 h-16 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fa fa-file-text-o text-2xl text-secondary"></i>
+                </div>
+                <h3 class="text-xl font-bold text-dark mb-2">多种输出格式</h3>
+                <p class="text-gray-600">支持DOCX和TXT格式，满足不同阅读需求</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+                <div class="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fa fa-clock-o text-2xl text-accent"></i>
+                </div>
+                <h3 class="text-xl font-bold text-dark mb-2">实时进度</h3>
+                <p class="text-gray-600">实时显示爬取进度和预计剩余时间</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-8">
+        <div class="container mx-auto px-4">
+            <div class="text-center">
+                <p class="mb-2">小说爬虫工具 &copy; 2026</p>
+                <p class="text-sm text-gray-400">支持起点中文网和番茄小说</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const crawlForm = document.getElementById('crawlForm');
+            const progressSection = document.getElementById('progressSection');
+            const progressBar = document.getElementById('progressBar');
+            const progressPercentage = document.getElementById('progressPercentage');
+            const statusText = document.getElementById('statusText');
+            const chapterProgress = document.getElementById('chapterProgress');
+            const estimatedTime = document.getElementById('estimatedTime');
+            const taskId = document.getElementById('taskId');
+            const errorMessage = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+            const downloadSection = document.getElementById('downloadSection');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const submitBtn = document.getElementById('submitBtn');
+
+            let currentTaskId = null;
+            let statusInterval = null;
+
+            crawlForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                // 收集表单数据
+                const url = document.getElementById('url').value;
+                const format = document.querySelector('input[name="format"]:checked').value;
+                const start = parseInt(document.getElementById('start').value);
+                const end = document.getElementById('end').value ? parseInt(document.getElementById('end').value) : null;
+
+                // 显示加载状态
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i> 提交中...';
+
+                // 发送请求
+                fetch('/api/crawl', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        url: url,
+                        format: format,
+                        start: start,
+                        end: end
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(data.error);
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<i class="fa fa-spider mr-2"></i> 开始爬取';
+                        return;
+                    }
+
+                    // 隐藏表单，显示进度
+                    crawlForm.parentElement.classList.add('hidden');
+                    progressSection.classList.remove('hidden');
+
+                    currentTaskId = data.task_id;
+                    taskId.textContent = currentTaskId;
+
+                    // 开始轮询状态
+                    startStatusPolling(currentTaskId);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('提交失败，请稍后重试');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fa fa-spider mr-2"></i> 开始爬取';
+                });
+            });
+
+            function startStatusPolling(taskId) {
+                statusInterval = setInterval(() => {
+                    fetch(`/api/status/${taskId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            clearInterval(statusInterval);
+                            showError(data.error);
+                            return;
+                        }
+
+                        // 更新进度
+                        progressBar.style.width = `${data.progress}%`;
+                        progressPercentage.textContent = `${data.progress}%`;
+                        statusText.textContent = getStatusText(data.status);
+                        chapterProgress.textContent = `${data.current_chapter} / ${data.total_chapters}`;
+                        
+                        if (data.estimated_time > 0) {
+                            estimatedTime.textContent = `${data.estimated_time.toFixed(1)} 秒`;
+                        } else {
+                            estimatedTime.textContent = '--';
+                        }
+
+                        // 检查任务状态
+                        if (data.status === 'completed') {
+                            clearInterval(statusInterval);
+                            showDownloadButton(taskId);
+                        } else if (data.status === 'failed') {
+                            clearInterval(statusInterval);
+                            showError(data.error || '爬取失败');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        clearInterval(statusInterval);
+                        showError('获取状态失败');
+                    });
+                }, 1000);
+            }
+
+            function getStatusText(status) {
+                const statusMap = {
+                    'pending': '准备中...',
+                    'running': '爬取中...',
+                    'completed': '已完成',
+                    'failed': '失败'
+                };
+                return statusMap[status] || status;
+            }
+
+            function showError(error) {
+                errorText.textContent = error;
+                errorMessage.classList.remove('hidden');
+            }
+
+            function showDownloadButton(taskId) {
+                downloadBtn.href = `/api/download/${taskId}`;
+                downloadSection.classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
