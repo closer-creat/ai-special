@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """小说爬虫Web界面"""
 from flask import Flask, render_template, request, jsonify, send_file
+import sys
+sys.path.append('/workspace/novel_crawler')
 from spiders.novel_spider import NovelSpider
 import os
 import threading

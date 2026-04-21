@@ -1,5 +1,5 @@
-from novel_crawler.spiders.base_spider import BaseSpider
-from novel_crawler.utils.file_utils import save_to_docx, save_to_txt
+from spiders.base_spider import BaseSpider
+from utils.file_utils import save_to_docx, save_to_txt
 from tqdm import tqdm
 import re
 import time
