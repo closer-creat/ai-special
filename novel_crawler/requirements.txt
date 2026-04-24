@@ -1,0 +1,9 @@
+requests
+beautifulsoup4
+selenium
+python-docx
+lxml
+fake_useragent
+tqdm
+webdriver-manager
+Flask

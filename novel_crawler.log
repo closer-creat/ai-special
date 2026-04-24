@@ -1,0 +1,12 @@
+2026-04-21 07:41:01,440 - novel_crawler - INFO - 请求成功: https://example.com/novel
+2026-04-21 07:41:20,345 - novel_crawler - INFO - 请求成功: https://example.com/novel
+2026-04-21 07:41:20,345 - novel_crawler - WARNING - 请求失败 (尝试 1/3): https://example.com/novel, 错误: 网络错误
+2026-04-21 07:41:20,345 - novel_crawler - INFO - 等待 2.04 秒后重试...
+2026-04-21 07:41:22,384 - novel_crawler - WARNING - 请求失败 (尝试 2/3): https://example.com/novel, 错误: 网络错误
+2026-04-21 07:41:22,385 - novel_crawler - INFO - 等待 4.17 秒后重试...
+2026-04-21 07:41:26,552 - novel_crawler - WARNING - 请求失败 (尝试 3/3): https://example.com/novel, 错误: 网络错误
+2026-04-21 07:41:26,552 - novel_crawler - ERROR - 多次请求失败: https://example.com/novel, 错误: 网络错误
+2026-04-21 07:41:26,553 - novel_crawler - INFO - 请求成功: https://example.com/novel
+2026-04-21 07:41:26,554 - novel_crawler - INFO - 成功获取 3 个章节
+2026-04-21 07:41:26,554 - novel_crawler - INFO - 请求成功: https://example.com/novel/chapter1
+2026-04-21 07:41:26,555 - novel_crawler - INFO - 成功获取章节内容: https://example.com/novel/chapter1
